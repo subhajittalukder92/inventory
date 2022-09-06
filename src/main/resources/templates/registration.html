@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Registration Page</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" th:href="@{/plugins/fontawesome-free/css/all.min.css}">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" th:href="@{/plugins/icheck-bootstrap/icheck-bootstrap.min.css}">
+    <!-- Theme style -->
+    <link rel="stylesheet" th:href="@{/dist/css/adminlte.min.css}">
+</head>
+<body class="hold-transition register-page">
+<div class="register-box">
+    <div class="card card-outline card-primary">
+        <div class="card-header text-center">
+            <b>New Registration</b>
+        </div>
+        <div class="card-body">
+
+            <div th:if="${message}" class="alert alert-dismissible" th:text="${message.content}" th:classappend="${message.className}">
+                <button type='button' class='close' data-dismiss='alert'>&times;</button>
+
+            </div>
+            <form  method="post" th:action="@{/registration}" th:object="${registration}" autocomplete="off">
+                <div class="input-group mb-3">
+                    <input type="text" th:field="*{firstName}" th:classappend="${#fields.hasErrors('firstName') ? 'is-invalid' : ''}" class="form-control" placeholder="First name">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                    <span th:each="e : ${#fields.errors('firstName')}" th:text="${e}" id="exampleInputEmail1-error"
+                          class="invalid-feedback"></span>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" th:field="*{lastName}" th:classappend="${#fields.hasErrors('lastName') ? 'is-invalid' : ''}" class="form-control" placeholder="Last name">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                    <span th:each="e : ${#fields.errors('lastName')}" th:text="${e}" id="lastName-error"
+                          class="invalid-feedback"></span>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="email" class="form-control" th:classappend="${#fields.hasErrors('email') ? 'is-invalid' : ''}" placeholder="Email" th:field="*{email}">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-envelope"></span>
+                        </div>
+                    </div>
+                    <span th:each="e : ${#fields.errors('email')}" th:text="${e}" id="email-error"
+                          class="invalid-feedback"></span>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control"  th:classappend="${#fields.hasErrors('password') ? 'is-invalid' : ''}"  placeholder="Password" th:field="*{password}">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                    <span th:each="e : ${#fields.errors('password')}" th:text="${e}" id="password-error"
+                          class="invalid-feedback"></span>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control" th:classappend="${#fields.hasErrors('confirmPassword') ? 'is-invalid' : ''}" placeholder="Retype password" th:field="*{confirmPassword}">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                    <span th:each="e : ${#fields.errors('confirmPassword')}" th:text="${e}" id="confirmPassword-error"
+                          class="invalid-feedback"></span>
+                </div>
+                <div class="row">
+                    <div class="col-8">
+                        <div class="icheck-primary">
+                            <input type="checkbox" id="agreeTerms" name="terms" value="agree">
+                            <label for="agreeTerms">
+                                I agree to the <a href="#">terms</a>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-primary btn-block">Register</button>
+                    </div>
+                    <!-- /.col -->
+                </div>
+            </form>
+
+            <a href="@{/login}" class="text-center">I already have a membership</a>
+        </div>
+        <!-- /.form-box -->
+    </div><!-- /.card -->
+</div>
+<!-- /.register-box -->
+
+<!-- jQuery -->
+<script th:src="@{/plugins/jquery/jquery.min.js}"></script>
+<!-- Bootstrap 4 -->
+<script th:src="@{plugins/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<!-- AdminLTE App -->
+<script th:src="@{/dist/js/adminlte.min.js}"></script>
+</body>
+</html>

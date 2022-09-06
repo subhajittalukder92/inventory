@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layouts/template}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div class="content-wrapper" layout:fragment="content">
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Client</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" id="clientForm">
+                        <div class="form-group">
+                            <label for="clientName" class="col-form-label">Name:</label>
+                            <input type="text" class="form-control" id="clientName" name="clientName">
+                        </div>
+                        <div class="form-group">
+                            <label for="contactNo" class="col-form-label">Contact No:</label>
+                            <input type="text" class="form-control" id="contactNo" name="contactNo">
+                        </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1></h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Invoice Create</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- left column -->
+                <div class="col-md-12">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">New Invoice</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <div style="display: none;" id="allProducts">
+                            <option value="">Select Product</option>
+                            <th:block th:if="${products}" th:each="product: ${products}">
+                                <option th:value="${product.id}" th:text="${product.productName}"></option>
+                            </th:block>
+                        </div>
+                        <form th:method="post" th:action="@{/admin/invoice/create}" th:object="${invoice}">
+                            <div class="card-body">
+                                <div class="row"><button type="button" name="addClient" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">New Client</button></div>
+                                <div class="row">
+
+                                    <div class="col-md-4">
+                                        <input type="hidden" th:field="*{id}">
+                                        <div class="form-group">
+                                            <label>Client</label>
+                                            <select th:classappend="${#fields.hasErrors('client') ? 'is-invalid' : ''}" th:field="*{client}" class="form-control">
+                                                <option value="">Select Client</option>
+                                                <th:block th:each="client: ${clients}">
+                                                    <option th:value="${client.id}" th:text="${client.clientName}"></option>
+
+                                                </th:block>
+                                            </select>
+                                            <span th:each="e : ${#fields.errors('client')}" th:text="${e}" id="exampleInputProduct-error"
+                                                  class="invalid-feedback"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Date</label>
+                                            <input type="date" th:classappend="${#fields.hasErrors('date') ? 'is-invalid' : ''}" th:field="*{date}" class="form-control">
+                                            <span th:each="e : ${#fields.errors('date')}" th:text="${e}" id="exampleInputprice-error" class="invalid-feedback"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Price</label>
+                                            <input type="text" id="grandTotal" class="form-control" readonly th:field="*{totalAmt}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <button type="button"onclick="addRow()" class="btn btn-sm btn-primary"><i class="fa fa-plus-circle"></i> Add New </button>
+                                    <div class="col-md-12">
+                                        <table class="table table-sm" id="productTable">
+                                            <thead>
+                                                <th>Product</th>
+                                                <th>Quantity</th>
+                                                <th>Rate</th>
+                                                <th>Discount</th>
+                                                <th>Tax</th>
+                                                <th>Total</th>
+                                                <th></th>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:each="tempInvoiceDetail,loop : *{invoiceDetail}" th:id="row + ${loop.index}">
+                                                <td>
+                                                    <input type="hidden" th:field="*{invoiceDetail[__${loop.index}__].id}">
+                                                    <select th:field="*{invoiceDetail[__${loop.index}__].product}" th:onchange="'getProduct('+ ${loop.index} +')'"
+                                                            th:classappend="${#fields.hasErrors('*{invoiceDetail[__${loop.index}__].product}') ? 'is-invalid':''}"
+                                                            class="form-control">
+                                                        <option value="">Select Product</option>
+                                                        <th:block th:each="product: ${products}">
+                                                            <option th:value="${product.id}" th:text="${product.productName}"></option>
+                                                        </th:block>
+                                                    </select>
+                                                    <span th:each="e : ${#fields.errors('*{invoiceDetail[__${loop.index}__].product}')}" th:text="${e}"
+                                                          class="invalid-feedback"></span>
+                                                </td>
+                                                <td>
+                                                    <input type="number" th:field="*{invoiceDetail[__${loop.index}__].quantity}"
+                                                           th:classappend="${#fields.hasErrors('*{invoiceDetail[__${loop.index}__].quantity}') ? 'is-invalid':''}"
+                                                           class="form-control" th:onkeyup="'getTotal('+${loop.index}+')'">
+                                                    <span th:each="e : ${#fields.errors('*{invoiceDetail[__${loop.index}__].quantity}')}" th:text="${e}"
+                                                          class="invalid-feedback"></span>
+                                                </td>
+                                                <td>
+                                                    <input type="number" readonly th:field="*{invoiceDetail[__${loop.index}__].price}"
+                                                           th:classappend="${#fields.hasErrors('*{invoiceDetail[__${loop.index}__].price}') ? 'is-invalid':''}"
+
+                                                           class="form-control">
+                                                    <span th:each="e : ${#fields.errors('*{invoiceDetail[__${loop.index}__].price}')}" th:text="${e}"
+                                                          class="invalid-feedback"></span>
+                                                </td>
+                                                <td>
+                                                    <input type="number" th:onkeyup="'getTotal('+${loop.index}+')'" th:field="*{invoiceDetail[__${loop.index}__].discount}" class="form-control">
+                                                </td>
+                                                <td>
+                                                    <input type="number" readonly th:field="*{invoiceDetail[__${loop.index}__].gstRate}" class="form-control">
+                                                </td>
+                                                <td>
+                                                    <input type="number" readonly th:field="*{invoiceDetail[__${loop.index}__].total}" class="form-control">
+                                                </td>
+                                                <td><button type="button" class="btn btn-sm btn-danger" th:onclick="'deleteRow(' + ${loop.index} +')'"><i class="fa fa-trash"></i></button></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- /.card-body -->
+
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+
+                </div>
+                <!--/.col (left) -->
+                <div class="col-md-6"></div>
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+</body>
+
+<th:block layout:fragment="myScript">
+<script>
+    var address = "[[@{/}]]";
+
+    $(document).ready(function (){
+        let arr =[];
+        arr.push({"clientName":$('#clientName').val(),"contactNo":$('#contactNo').val()});
+        $('#clientForm').on('submit',function (e){
+           e.preventDefault();
+           $.ajax({
+                url: address +"admin/client/create",
+                method:"POST",
+                contentType: "application/json",
+                data:JSON.stringify({clientName: $('#clientName').val(), contactNo: $('#contactNo').val()}),
+                dataType:"json",
+                cache:false,
+                success:function (response) {
+                    if(response.success){
+                        let option='<option value="'+response.data.id+'" selected>'+response.data.clientName+'</option>';
+                        $("#clientForm")[0].reset();
+                        $('#client').append(option);
+                        $('#exampleModal').modal('hide');
+
+                    }else{
+                        alert(response.message);
+                    }
+
+                },
+
+            })
+        });
+    });
+    function getProduct(count){
+        let productId = $('#invoiceDetail'+count+'\\.product').val() ;
+       $.ajax({
+           url: address +"admin/product/"+ productId,
+           method:"GET",
+           dataType:"json",
+           cache:false,
+           success:function (response) {
+               if(response.success){
+                   let data = response.data[0];
+                   $('#invoiceDetail'+count+'\\.price').val(data.price);
+                   $('#invoiceDetail'+count+'\\.gstRate').val(data.gstRate);
+                   $('#invoiceDetail'+count+'\\.quantity').val(1);
+                   $('#invoiceDetail'+count+'\\.discount').val(0);
+                   getTotal(count);
+               }else{
+                   alert(response.message);
+               }
+
+           },
+
+       })
+    }
+    function addRow(){
+        let tableLength = $('#productTable tbody tr').length ;
+
+        let count = 0;
+        let products = $('#allProducts').html();
+        if(tableLength > 0){
+            let tableRow = $("#productTable tbody tr:last").attr('id');
+            count = tableRow.substring(3);
+            count = Number(count)+ 1;
+        }else{
+            count = 0 ;
+        }
+        let tr = '<tr id="row'+count+'">'+
+                    '<td>'+
+                        '<select onchange="getProduct('+count+')" class="form-control" id="invoiceDetail'+count+'.product" name="invoiceDetail['+count+'].product">'+
+                            products+
+                        '</select>'+
+                    '</td>'+
+                    '<td>'+
+                        '<input type="number" onkeyup="getTotal('+count+')" class="form-control" id="invoiceDetail'+count+'.quantity" name="invoiceDetail['+count+'].quantity">'+
+                    '</td>'+
+                    '<td>'+
+                        '<input type="number" readonly class="form-control" id="invoiceDetail'+count+'.price" name="invoiceDetail['+count+'].price">'+
+                    '</td>'+
+                     '<td>'+
+                        '<input type="number" onkeyup="getTotal('+count+')"  class="form-control" id="invoiceDetail'+count+'.discount" name="invoiceDetail['+count+'].discount">'+
+                    '</td>'+
+                    '<td>'+
+                        '<input type="number" readonly class="form-control" id="invoiceDetail'+count+'.gstRate" name="invoiceDetail['+count+'].gstRate">'+
+                    '</td>'+
+                    '<td>'+
+                        '<input type="number" readonly class="form-control" id="invoiceDetail'+count+'.total" name="invoiceDetail['+count+'].total">'+
+                    '</td>'+
+                    '<td>'+
+                        '<button type="button" class="btn-sm btn-danger" id="deleteButton'+count+'" onclick="deleteRow('+count+')"><i class="fa fa-trash"></i></button>'+
+                    '</td>'+
+                '</tr>';
+        if(tableLength > 0) {
+            $("#productTable tbody tr:last").after(tr);
+        } else {
+            $("#productTable tbody").append(tr);
+        }
+    }
+    function getTotal(row = null) {
+
+            var quantity = parseInt($("#invoiceDetail"+row+"\\.quantity").val()) || 0 ;
+            var price = parseFloat($("#invoiceDetail"+row+"\\.price").val()) || 0 ;
+            var discount = parseFloat($("#invoiceDetail"+row+"\\.discount").val()) || 0 ;
+            var tax = parseFloat($("#invoiceDetail"+row+"\\.gstRate").val()) || 0 ;
+            var total = price * quantity;
+            var subAmount 	=  total *(100 - discount)/100;
+            var totalAmount = subAmount * (100 + tax)/100;
+
+            $("#invoiceDetail"+row+"\\.total").val(totalAmount.toFixed(2));
+            findGrandTotal();
+
+
+    }
+    function findGrandTotal()
+    {
+        let len = $('#productTable tbody tr').length;
+        let grandTotal=0;
+        for(x=0 ; x< len ; x++){
+            let tr = $("#productTable tbody tr")[x];
+            let count = $(tr).attr('id');
+            count = count.substring(3);
+            grandTotal += parseFloat($('#invoiceDetail'+count+'\\.total').val()) || 0 ;
+
+        }
+
+        $('#grandTotal').val(grandTotal.toFixed(2));
+        /* $('#grandTotalValue').val(grandTotal.toFixed(2));
+        $('#paid').val(grandTotal.toFixed(2)); */
+    }
+    function deleteRow(row= ""){
+
+        $('#row'+row).remove();
+        findGrandTotal()
+    }
+</script>
+</th:block>
+</html>
